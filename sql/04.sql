@@ -3,3 +3,4 @@
  * HINT:
  * Use the count() aggregation function and the rental_rate column of the film table.
  */
+SELECT COUNT(film_id) FROM film WHERE rental_rate < 1;
