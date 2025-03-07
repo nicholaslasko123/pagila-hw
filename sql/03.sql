@@ -4,6 +4,5 @@
  */
 SELECT last_name
 FROM actor
-WHERE LOWER(last_name) LIKE '%li%'
-ORDER BY last_name ASC;
-
+WHERE LOWER(last_name) ILIKE '%li%'
+ORDER BY last_name;
