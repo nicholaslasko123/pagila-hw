@@ -5,35 +5,25 @@ on:
   pull_request:
     branches: ['*']
 jobs:
-  docker:
+  tests:
+    strategy:
+      matrix:
+        python: [3.8, 3.9]
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
-    - name: docker
-      run: |
-        # load the pagila data
-        git submodule init
-        git submodule update
-
-        # run the database in docker container
-        docker compose up -d --build
-
-        # verify that it is running successfully
-        # this is an idempotent command useful for debugging
-        docker ps -a
-
-        # after the database starts successfully,
-        # it needs time to load the pagila data;
-        # this should happen in <1 second,
-        # but we sleep for a long time just to be sure that everything is loaded;
-        # this is a bit hacky,
-        # and a proper check would be to have an infinite loop that terminates once the data has been loaded
-        sleep 20
-
-        # run the tests
-        docker compose exec -T pg ./run_tests.sh
-
-        # FIXME:
-        # the docker-compose command above will generate an error when the github action is run
-        # this is due to the `fixme.sh` file not existing
-        # you will have to modify this file so that github actions runs the correct test cases
+      - uses: actions/checkout@v2
+      - name: Set up Python ${{matrix.python}}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{matrix.python}}
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+      - name: Run linter
+        run: |
+          pip3 install flake8 pep8-naming
+          flake8 .
+      - name: Run tests
+        run: |
+          python -m doctest Fixme.py
